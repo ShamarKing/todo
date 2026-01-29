@@ -24,7 +24,12 @@ function addTodo() {
     const text = todoInput.value.trim();
     
     if (text === '') {
-        alert('Please enter a task!');
+        todoInput.style.borderColor = '#ff6b6b';
+        todoInput.placeholder = 'Please enter a task!';
+        setTimeout(() => {
+            todoInput.style.borderColor = '';
+            todoInput.placeholder = 'Add a new task...';
+        }, 2000);
         return;
     }
     
@@ -75,12 +80,30 @@ function renderTodos() {
                 type="checkbox" 
                 class="todo-checkbox" 
                 ${todo.completed ? 'checked' : ''}
-                onchange="toggleTodo(${todo.id})"
+                aria-label="Mark '${escapeHtml(todo.text)}' as ${todo.completed ? 'incomplete' : 'complete'}"
             />
             <span class="todo-text">${escapeHtml(todo.text)}</span>
-            <button class="delete-btn" onclick="deleteTodo(${todo.id})">Delete</button>
+            <button class="delete-btn" aria-label="Delete task '${escapeHtml(todo.text)}'">Delete</button>
         </li>
     `).join('');
+    
+    // Attach event listeners using event delegation
+    attachEventListeners();
+}
+
+// Attach event listeners to todo items
+function attachEventListeners() {
+    // Use event delegation for checkboxes
+    todoList.querySelectorAll('.todo-checkbox').forEach(checkbox => {
+        const todoId = parseInt(checkbox.closest('.todo-item').dataset.id);
+        checkbox.addEventListener('change', () => toggleTodo(todoId));
+    });
+    
+    // Use event delegation for delete buttons
+    todoList.querySelectorAll('.delete-btn').forEach(button => {
+        const todoId = parseInt(button.closest('.todo-item').dataset.id);
+        button.addEventListener('click', () => deleteTodo(todoId));
+    });
 }
 
 // Escape HTML to prevent XSS
